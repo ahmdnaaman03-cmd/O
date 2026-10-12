@@ -1,0 +1,140 @@
+=== مشروع OrderPing - الكود المصدري ===
+
+
+==================================================
+File Path: ./run.py
+==================================================
+
+from app import create_app
+
+app = create_app()
+
+if __name__ == '__main__':
+    # أضفنا use_reloader=False لتخطي مشكلة الذاكرة في iSH
+    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+
+
+==================================================
+File Path: ./.gitignore
+==================================================
+
+venv/
+__pycache__/
+
+
+==================================================
+File Path: ./requirements.txt
+==================================================
+
+blinker==1.9.0
+click==8.1.8
+Flask==3.1.3
+importlib_metadata==8.7.1
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.4
+Werkzeug==3.1.9
+zipp==3.23.1
+
+
+==================================================
+File Path: ./app/__init__.py
+==================================================
+
+from flask import Flask
+
+def create_app():
+    app = Flask(__name__)
+
+    from app.webhooks.routes import webhooks
+    from app.messaging.routes import messaging
+    from app.dashboard.routes import dashboard
+    from app.auth.routes import auth
+
+    app.register_blueprint(webhooks, url_prefix='/api/webhooks')
+    app.register_blueprint(messaging, url_prefix='/api/messaging')
+    app.register_blueprint(dashboard, url_prefix='/dashboard')
+    app.register_blueprint(auth, url_prefix='/auth')
+
+    @app.route('/')
+    def index():
+        return "Welcome to OrderPing Core API!"
+
+    return app
+
+
+==================================================
+File Path: ./app/webhooks/routes.py
+==================================================
+
+from flask import Blueprint
+
+webhooks = Blueprint('webhooks', __name__)
+
+@webhooks.route('/')
+def receive_order():
+    return "Webhooks: Ready to receive orders"
+
+
+==================================================
+File Path: ./app/webhooks/__init__.py
+==================================================
+
+
+
+==================================================
+File Path: ./app/auth/routes.py
+==================================================
+
+from flask import Blueprint
+
+auth = Blueprint('auth', __name__)
+
+@auth.route('/login')
+def login():
+    return "Auth: Login page"
+
+
+==================================================
+File Path: ./app/auth/__init__.py
+==================================================
+
+
+
+==================================================
+File Path: ./app/messaging/routes.py
+==================================================
+
+from flask import Blueprint
+
+messaging = Blueprint('messaging', __name__)
+
+@messaging.route('/')
+def send_message():
+    return "Messaging: Ready to send confirmation messages"
+
+
+==================================================
+File Path: ./app/messaging/__init__.py
+==================================================
+
+
+
+==================================================
+File Path: ./app/dashboard/routes.py
+==================================================
+
+from flask import Blueprint
+
+dashboard = Blueprint('dashboard', __name__)
+
+@dashboard.route('/')
+def show_dashboard():
+    return "Dashboard: OrderPing stats will be here"
+
+
+==================================================
+File Path: ./app/dashboard/__init__.py
+==================================================
+
+
