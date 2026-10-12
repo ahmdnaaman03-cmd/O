@@ -21,11 +21,11 @@ def handle_shopify_webhook():
     hmac_header = request.headers.get('X-Shopify-Hmac-Sha256')
 
     if not verify_webhook(data, hmac_header):
-        print("❌ فشل التحقق من التوقيع!")
+        print("❌ فشل التحقق من التوقيع!", flush=True)
         return jsonify({'error': 'Unauthorized'}), 401
 
     order_data = request.json
-    print("✅ تم استلام الطلب والتحقق بنجاح!")
+    print("✅ تم استلام الطلب والتحقق بنجاح!", flush=True)
     
     phone = (
         order_data.get('shipping_address', {}).get('phone') or
@@ -34,6 +34,6 @@ def handle_shopify_webhook():
         order_data.get('phone')
     )
     
-    print(f"📱 رقم الهاتف المستخرج: {phone}")
+    print(f"📱 رقم الهاتف المستخرج: {phone}", flush=True)
     
     return jsonify({'status': 'success', 'message': 'Webhook received'}), 200
