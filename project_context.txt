@@ -1,0 +1,740 @@
+
+
+==================================================
+FILE: ./orderping_source_code.txt
+==================================================
+
+=== مشروع OrderPing - الكود المصدري ===
+
+
+==================================================
+File Path: ./run.py
+==================================================
+
+from app import create_app
+
+app = create_app()
+
+if __name__ == '__main__':
+    # أضفنا use_reloader=False لتخطي مشكلة الذاكرة في iSH
+    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+
+
+==================================================
+File Path: ./.gitignore
+==================================================
+
+venv/
+__pycache__/
+
+
+==================================================
+File Path: ./requirements.txt
+==================================================
+
+blinker==1.9.0
+click==8.1.8
+Flask==3.1.3
+importlib_metadata==8.7.1
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.4
+Werkzeug==3.1.9
+zipp==3.23.1
+
+
+==================================================
+File Path: ./app/__init__.py
+==================================================
+
+from flask import Flask
+
+def create_app():
+    app = Flask(__name__)
+
+    from app.webhooks.routes import webhooks
+    from app.messaging.routes import messaging
+    from app.dashboard.routes import dashboard
+    from app.auth.routes import auth
+
+    app.register_blueprint(webhooks, url_prefix='/api/webhooks')
+    app.register_blueprint(messaging, url_prefix='/api/messaging')
+    app.register_blueprint(dashboard, url_prefix='/dashboard')
+    app.register_blueprint(auth, url_prefix='/auth')
+
+    @app.route('/')
+    def index():
+        return "Welcome to OrderPing Core API!"
+
+    return app
+
+
+==================================================
+File Path: ./app/webhooks/routes.py
+==================================================
+
+from flask import Blueprint
+
+webhooks = Blueprint('webhooks', __name__)
+
+@webhooks.route('/')
+def receive_order():
+    return "Webhooks: Ready to receive orders"
+
+
+==================================================
+File Path: ./app/webhooks/__init__.py
+==================================================
+
+
+
+==================================================
+File Path: ./app/auth/routes.py
+==================================================
+
+from flask import Blueprint
+
+auth = Blueprint('auth', __name__)
+
+@auth.route('/login')
+def login():
+    return "Auth: Login page"
+
+
+==================================================
+File Path: ./app/auth/__init__.py
+==================================================
+
+
+
+==================================================
+File Path: ./app/messaging/routes.py
+==================================================
+
+from flask import Blueprint
+
+messaging = Blueprint('messaging', __name__)
+
+@messaging.route('/')
+def send_message():
+    return "Messaging: Ready to send confirmation messages"
+
+
+==================================================
+File Path: ./app/messaging/__init__.py
+==================================================
+
+
+
+==================================================
+File Path: ./app/dashboard/routes.py
+==================================================
+
+from flask import Blueprint
+
+dashboard = Blueprint('dashboard', __name__)
+
+@dashboard.route('/')
+def show_dashboard():
+    return "Dashboard: OrderPing stats will be here"
+
+
+==================================================
+File Path: ./app/dashboard/__init__.py
+==================================================
+
+
+
+
+==================================================
+FILE: ./project_context.txt
+==================================================
+
+
+
+==================================================
+FILE: ./run.py
+==================================================
+
+from app import create_app
+
+app = create_app()
+
+if __name__ == '__main__':
+    # أضفنا use_reloader=False لتخطي مشكلة الذاكرة في iSH
+    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+
+
+==================================================
+FILE: ./seed_merchant.py
+==================================================
+
+from app import create_app
+from app.models import db, Merchant
+
+app = create_app()
+with app.app_context():
+    # إنشاء الجداول لو مش موجودة
+    db.create_all()
+    
+    # التأكد إن التاجر مش موجود قبل إضافته
+    merchant = Merchant.query.filter_by(store_url="test-store.myshopify.com").first()
+    if not merchant:
+        merchant = Merchant(
+            store_name="Test Store",
+            store_url="test-store.myshopify.com",
+            webhook_secret="my_super_secret_hmac_key"
+        )
+        db.session.add(merchant)
+        db.session.commit()
+        print("✅ Test Merchant created successfully!")
+    else:
+        print("✅ Test Merchant already exists.")
+
+
+==================================================
+FILE: ./bundle_project.py
+==================================================
+
+import os
+
+project_dir = "." 
+output_file = "project_context.txt"
+
+included_extensions = {".py", ".html", ".css", ".js", ".json", ".txt"}
+ignored_dirs = {".git", "__pycache__", "venv", "env", "node_modules"}
+
+with open(output_file, "w", encoding="utf-8") as outfile:
+    for root, dirs, files in os.walk(project_dir):
+        dirs[:] = [d for d in dirs if d not in ignored_dirs]
+        for file in files:
+            ext = os.path.splitext(file)[1]
+            if ext in included_extensions:
+                file_path = os.path.join(root, file)
+                outfile.write(f"\n\n{'='*50}\n")
+                outfile.write(f"FILE: {file_path}\n")
+                outfile.write(f"{'='*50}\n\n")
+                try:
+                    with open(file_path, "r", encoding="utf-8") as infile:
+                        outfile.write(infile.read())
+                except Exception as e:
+                    outfile.write(f"[Error reading file: {e}]")
+
+print(f"تم تجميع المشروع بنجاح في ملف: {output_file}")
+
+
+==================================================
+FILE: ./requirements.txt
+==================================================
+
+annotated-types==0.8.0
+blinker==1.9.0
+certifi==2026.7.22
+cffi==2.1.1
+charset-normalizer==3.5.2
+click==8.1.8
+cryptography==50.0.2
+Flask==3.1.3
+Flask-SQLAlchemy==3.1.1
+google-auth==2.62.0
+google-genai==1.2.0
+idna==3.20
+importlib_metadata==8.7.1
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.4
+pyasn1==0.6.4
+pyasn1_modules==0.4.2
+pycparser==3.11
+pydantic==2.14.1
+pydantic_core==2.50.1
+python-dotenv==1.2.4
+requests==2.34.2
+SQLAlchemy==2.1.4
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+urllib3==2.8.0
+websockets==14.2
+Werkzeug==3.1.9
+zipp==3.23.1
+
+
+==================================================
+FILE: ./export_repo.py
+==================================================
+
+import os
+
+def export_project_to_txt(output_filename="orderping_source_code.txt"):
+    ignore_dirs = {'.git', '__pycache__', 'venv', 'env', '.idea', '.vscode'}
+    ignore_exts = {'.pyc', '.png', '.jpg', '.jpeg', '.pdf', '.sqlite3'}
+
+    with open(output_filename, 'w', encoding='utf-8') as outfile:
+        outfile.write("=== مشروع OrderPing - الكود المصدري ===\n\n")
+        
+        for root, dirs, files in os.walk('.'):
+            dirs[:] = [d for d in dirs if d not in ignore_dirs]
+
+            for file in files:
+                ext = os.path.splitext(file)[1].lower()
+                if ext in ignore_exts or file == output_filename or file == "export_repo.py":
+                    continue
+
+                filepath = os.path.join(root, file)
+                outfile.write(f"\n{'='*50}\n")
+                outfile.write(f"File Path: {filepath}\n")
+                outfile.write(f"{'='*50}\n\n")
+
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as infile:
+                        outfile.write(infile.read())
+                        outfile.write("\n")
+                except Exception as e:
+                    outfile.write(f"[تعذر قراءة الملف: {e}]\n")
+
+    print(f"✅ تم تجميع الأكواد بنجاح في ملف: {output_filename}")
+
+if __name__ == "__main__":
+    export_project_to_txt()
+
+
+==================================================
+FILE: ./test_webhook.py
+==================================================
+
+import json
+import hmac
+import hashlib
+import base64
+import os
+from dotenv import load_dotenv
+
+# السطر ده هو الحل: بيقرا مفتاح التشفير من ملف .env
+load_dotenv() 
+
+from app import create_app
+from app.models import db, Order
+
+app = create_app()
+
+def generate_hmac(payload_bytes, secret):
+    digest = hmac.new(secret.encode('utf-8'), payload_bytes, hashlib.sha256).digest()
+    return base64.b64encode(digest).decode('utf-8')
+
+# بيانات الطلب الوهمي
+payload_dict = {
+    "id": 99887766,
+    "phone": "01012345678",
+    "customer": {"first_name": "أحمد"},
+    "total_price": "1500.00",
+    "currency": "EGP"
+}
+payload_bytes = json.dumps(payload_dict).encode('utf-8')
+
+SECRET_KEY = "my_super_secret_hmac_key"
+computed_hmac = generate_hmac(payload_bytes, SECRET_KEY)
+
+headers = {
+    "Content-Type": "application/json",
+    "X-Shopify-Shop-Domain": "test-store.myshopify.com",
+    "X-Shopify-Hmac-Sha256": computed_hmac
+}
+
+with app.test_client() as client:
+    with app.app_context():
+        print("\n--- 🚀 Test 1: First Webhook Request ---")
+        response = client.post('/api/webhooks/shopify', data=payload_bytes, headers=headers)
+        print(f"Response Status: {response.status_code}")
+        print(f"Response Data: {response.get_json()}")
+        
+        print("\n--- 🔁 Test 2: Duplicate Request (Idempotency Test) ---")
+        response2 = client.post('/api/webhooks/shopify', data=payload_bytes, headers=headers)
+        print(f"Response Status: {response2.status_code}")
+        print(f"Response Data: {response2.get_json()}")
+
+        print("\n--- 🔒 Test 3: Database Security Check ---")
+        order = Order.query.filter_by(shopify_order_id="99887766").first()
+        if order:
+            print(f"Order Status in DB: {order.status}")
+            print(f"Raw Encrypted Phone in DB: {order._customer_phone}")
+            print(f"Decrypted Phone via Model: {order.customer_phone}")
+        print("\n=======================================\n")
+
+
+==================================================
+FILE: ./app/logger_setup.py
+==================================================
+
+import logging
+import re
+
+class PIIRedactionFilter(logging.Filter):
+    def filter(self, record):
+        # إخفاء أي رقم تليفون (أرقام تبدأ بـ + أو أرقام متتالية طويلة)
+        record.msg = re.sub(r'\+?\d{8,15}', '[REDACTED_PHONE]', str(record.msg))
+        return True
+
+def setup_logger(name):
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+        handler.setFormatter(formatter)
+        handler.addFilter(PIIRedactionFilter())
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+    return logger
+
+
+==================================================
+FILE: ./app/models.py
+==================================================
+
+import os
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from cryptography.fernet import Fernet
+
+db = SQLAlchemy()
+
+# إعداد التشفير
+def get_cipher():
+    key = os.environ.get('ENCRYPTION_KEY')
+    if not key:
+        raise ValueError("ENCRYPTION_KEY is missing in environment variables")
+    return Fernet(key.encode())
+
+def encrypt_data(data: str) -> str:
+    if not data: return data
+    return get_cipher().encrypt(data.encode()).decode()
+
+def decrypt_data(token: str) -> str:
+    if not token: return token
+    try:
+        return get_cipher().decrypt(token.encode()).decode()
+    except Exception:
+        return token # Fallback if already decrypted or invalid
+
+class Merchant(db.Model):
+    __tablename__ = 'merchants'
+    id = db.Column(db.Integer, primary_key=True)
+    store_name = db.Column(db.String(100), nullable=False)
+    store_url = db.Column(db.String(255), unique=True, nullable=False)
+    webhook_secret = db.Column(db.String(100)) # Shopify HMAC Secret
+    whatsapp_app_secret = db.Column(db.String(255)) # WhatsApp HMAC Secret
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    orders = db.relationship('Order', backref='merchant', lazy=True)
+
+class Order(db.Model):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True)
+    merchant_id = db.Column(db.Integer, db.ForeignKey('merchants.id'), nullable=False)
+    shopify_order_id = db.Column(db.String(100), nullable=False)
+    _customer_phone = db.Column('customer_phone', db.String(255), nullable=False) # Encrypted
+    status = db.Column(db.String(50), default='pending_whatsapp_sent') # State Machine
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Property to handle automatic encryption/decryption
+    @property
+    def customer_phone(self):
+        return decrypt_data(self._customer_phone)
+
+    @customer_phone.setter
+    def customer_phone(self, value):
+        self._customer_phone = encrypt_data(value)
+
+    # Mandatory Merchant Isolation Query Helper
+    @classmethod
+    def get_by_merchant(cls, merchant_id):
+        return cls.query.filter_by(merchant_id=merchant_id)
+
+
+==================================================
+FILE: ./app/__init__.py
+==================================================
+
+import os
+from flask import Flask
+from app.models import db
+
+def create_app():
+    app = Flask(__name__)
+    
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(base_dir, '..', 'orderping.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
+    db.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
+    from app.webhooks.routes import webhooks
+    from app.messaging.routes import messaging
+    from app.dashboard.routes import dashboard
+    from app.auth.routes import auth
+
+    app.register_blueprint(webhooks, url_prefix='/api/webhooks')
+    app.register_blueprint(messaging, url_prefix='/api/messaging')
+    app.register_blueprint(dashboard, url_prefix='/dashboard')
+    app.register_blueprint(auth, url_prefix='/auth')
+
+    @app.route('/')
+    def index():
+        return "Welcome to OrderPing Core API!"
+
+    return app
+
+
+==================================================
+FILE: ./app/webhooks/routes.py
+==================================================
+
+import os
+import hmac
+import hashlib
+import base64
+import json
+import re
+from flask import Blueprint, request, jsonify
+from app.models import db, Order, Merchant
+from app.logger_setup import setup_logger
+from app.messaging.whatsapp import send_whatsapp_confirmation
+
+logger = setup_logger('orderping.webhooks')
+webhooks = Blueprint('webhooks', __name__)
+
+def verify_shopify_hmac(data: bytes, hmac_header: str, secret: str) -> bool:
+    if not secret or not hmac_header:
+        return False
+    digest = hmac.new(secret.encode('utf-8'), data, hashlib.sha256).digest()
+    computed_hmac = base64.b64encode(digest).decode('utf-8')
+    return hmac.compare_digest(computed_hmac, hmac_header)
+
+def normalize_phone(raw_phone: str) -> str:
+    if not raw_phone: return ""
+    cleaned = re.sub(r'[^\d+]', '', str(raw_phone).strip())
+    if cleaned.startswith('00'): return '+' + cleaned[2:]
+    if not cleaned.startswith('+'):
+        return '+20' + cleaned[1:] if cleaned.startswith('0') else '+' + cleaned
+    return cleaned
+
+# ==========================================
+# 1. Normal Orders Webhook (Uses Merchant Secret)
+# ==========================================
+@webhooks.route('/shopify', methods=['POST'])
+def receive_shopify_order():
+    shop_domain = request.headers.get('X-Shopify-Shop-Domain')
+    if not shop_domain:
+        return jsonify({"error": "Missing Shop Domain"}), 400
+
+    merchant = Merchant.query.filter_by(store_url=shop_domain).first()
+    if not merchant:
+        return jsonify({"error": "Unauthorized Merchant"}), 401
+
+    hmac_header = request.headers.get('X-Shopify-Hmac-Sha256')
+    raw_data = request.get_data()
+    
+    # استخدام مفتاح التاجر
+    if not verify_shopify_hmac(raw_data, hmac_header, merchant.webhook_secret):
+        logger.error("Shopify HMAC verification failed")
+        return jsonify({"error": "Invalid Signature"}), 401
+
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Invalid JSON"}), 400
+
+    shopify_order_id = str(data.get('id'))
+    raw_phone = data.get('phone') or (data.get('customer') or {}).get('phone')
+    customer_phone = normalize_phone(raw_phone)
+
+    if not shopify_order_id or not customer_phone:
+        return jsonify({"error": "Missing order_id or phone"}), 400
+
+    existing_order = Order.get_by_merchant(merchant.id).filter_by(shopify_order_id=shopify_order_id).first()
+    if existing_order:
+        logger.info(f"Idempotency hit: Order {shopify_order_id} already exists.")
+        return jsonify({"success": True, "message": "Already processed"}), 200
+
+    try:
+        new_order = Order(
+            merchant_id=merchant.id,
+            shopify_order_id=shopify_order_id,
+            customer_phone=customer_phone,
+            status='pending_whatsapp_sent'
+        )
+        db.session.add(new_order)
+        db.session.commit()
+        
+        logger.info(f"Order {shopify_order_id} saved. Status: pending_whatsapp_sent.")
+
+        customer_name = (data.get('customer') or {}).get('first_name', 'عميلنا العزيز')
+        total_price = f"{data.get('total_price', '0.00')} {data.get('currency', 'EGP')}"
+        send_whatsapp_confirmation(shopify_order_id, customer_name, customer_phone, total_price)
+
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Database error: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+# ==========================================
+# 2. Shopify Mandatory GDPR Webhooks (Uses Global App Secret)
+# ==========================================
+@webhooks.route('/shopify/gdpr', methods=['POST'])
+def shopify_gdpr_webhooks():
+    shop_domain = request.headers.get('X-Shopify-Shop-Domain')
+    topic = request.headers.get('X-Shopify-Topic')
+    hmac_header = request.headers.get('X-Shopify-Hmac-Sha256')
+    
+    if not shop_domain or not topic:
+        return jsonify({"error": "Missing Headers"}), 400
+
+    # استخدام مفتاح التطبيق العام من البيئة
+    GLOBAL_APP_SECRET = os.environ.get('SHOPIFY_APP_SECRET', '')
+    raw_data = request.get_data()
+    
+    if not verify_shopify_hmac(raw_data, hmac_header, GLOBAL_APP_SECRET):
+        logger.error(f"GDPR Webhook HMAC failed for {shop_domain}")
+        return jsonify({"error": "Invalid Signature"}), 401
+
+    merchant = Merchant.query.filter_by(store_url=shop_domain).first()
+    if not merchant:
+        return jsonify({"success": True}), 200 
+
+    try:
+        if topic == 'shop/redact':
+            # التاجر مسح التطبيق: نمسح كل بياناته
+            Order.query.filter_by(merchant_id=merchant.id).delete()
+            db.session.delete(merchant)
+            db.session.commit()
+            logger.info(f"GDPR: Shop {shop_domain} uninstalled app. All data deleted.")
+
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"GDPR Webhook Error: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+
+==================================================
+FILE: ./app/webhooks/__init__.py
+==================================================
+
+
+
+==================================================
+FILE: ./app/auth/routes.py
+==================================================
+
+from flask import Blueprint
+
+auth = Blueprint('auth', __name__)
+
+@auth.route('/login')
+def login():
+    return "Auth: Login page"
+
+
+==================================================
+FILE: ./app/auth/__init__.py
+==================================================
+
+
+
+==================================================
+FILE: ./app/messaging/routes.py
+==================================================
+
+from flask import Blueprint
+
+messaging = Blueprint('messaging', __name__)
+
+@messaging.route('/')
+def send_message():
+    return "Messaging: Ready to send confirmation messages"
+
+
+==================================================
+FILE: ./app/messaging/__init__.py
+==================================================
+
+
+
+==================================================
+FILE: ./app/messaging/whatsapp.py
+==================================================
+
+import os
+import requests
+from app.logger_setup import setup_logger
+
+logger = setup_logger('orderping.messaging')
+
+def send_whatsapp_confirmation(order_id, customer_name, customer_phone, total_price):
+    WHATSAPP_TOKEN = os.environ.get('WHATSAPP_TOKEN', '')
+    PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
+
+    if not WHATSAPP_TOKEN or not PHONE_NUMBER_ID:
+        # استخدام الـ logger بدل print عشان فلتر الـ PII يشتغل ويخفي الرقم
+        logger.info(f"[SIMULATION] WhatsApp Message sent to {customer_phone}")
+        logger.info(f"Body: أهلاً {customer_name}، تم استلام طلبك {order_id} بقيمة {total_price}.")
+        return True
+
+    url = f"https://graph.facebook.com/v17.0/{PHONE_NUMBER_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {WHATSAPP_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": customer_phone.replace("+", ""),
+        "type": "interactive",
+        "interactive": {
+            "type": "button",
+            "body": {
+                "text": f"أهلاً {customer_name}،\nتم استلام طلبك رقم {order_id} بقيمة {total_price}.\nيرجى تأكيد أو إلغاء الطلب:"
+            },
+            "action": {
+                "buttons": [
+                    {"type": "reply", "reply": {"id": f"confirm_{order_id}", "title": "تأكيد الطلب"}},
+                    {"type": "reply", "reply": {"id": f"cancel_{order_id}", "title": "إلغاء الطلب"}}
+                ]
+            }
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        logger.info(f"WhatsApp sent successfully to {customer_phone}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send WhatsApp to {customer_phone}: {e}")
+        return False
+
+
+==================================================
+FILE: ./app/dashboard/routes.py
+==================================================
+
+from flask import Blueprint
+
+dashboard = Blueprint('dashboard', __name__)
+
+@dashboard.route('/')
+def show_dashboard():
+    return "Dashboard: OrderPing stats will be here"
+
+
+==================================================
+FILE: ./app/dashboard/__init__.py
+==================================================
+
